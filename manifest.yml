@@ -1,0 +1,278 @@
+modules:
+  jira:issuePanel:
+    - key: agent-ready-issue-panel
+      resource: issue-panel-resource
+      resolver:
+        function: ui-resolver
+      render: native
+      title: Agent-Ready Brief & MCP
+      icon: https://developer.atlassian.com/platform/forge/images/icons/issue-panel-icon.svg
+
+  jira:adminPage:
+    - key: agent-ready-admin-page
+      resource: admin-page-resource
+      resolver:
+        function: ui-resolver
+      render: native
+      title: Agent-Ready Issues Settings & Benchmark
+
+  jira:entityProperty:
+    - key: agent-ready-issue-properties
+      entityType: issue
+      propertyKey: agentReady
+      values:
+        - path: score
+          type: number
+          searchAlias: agentReadyScore
+        - path: status
+          type: string
+          searchAlias: agentReadyStatus
+        - path: reportStyle
+          type: string
+          searchAlias: agentReportStyle
+        - path: topFile
+          type: string
+          searchAlias: agentTopFile
+
+  trigger:
+    - key: issue-lifecycle-trigger
+      function: trigger-handler
+      events:
+        - avi:jira:created:issue
+        - avi:jira:updated:issue
+        - avi:jira:commented:issue
+
+  consumer:
+    - key: brief-pipeline-consumer
+      queue: brief-pipeline-queue
+      resolver:
+        function: consumer-handler
+        method: processBriefEvent
+
+  llm:
+    - key: llm-app
+      model:
+        - claude
+
+  rovo:mcp:
+    - key: agent-ready-mcp
+      name: "Agent-Ready Issues MCP"
+      tools:
+        - get-agent-brief
+        - get-readiness
+        - list-agent-ready-issues
+        - post-reporter-questions
+        - record-code-location
+        - record-fix-outcome
+
+  rovo:skill:
+    - key: agent-ready-brief-skill
+      source:
+        dir: skills/agent-ready-brief
+      dependencies:
+        tools:
+          - get-agent-brief
+          - get-readiness
+          - list-agent-ready-issues
+          - post-reporter-questions
+          - record-code-location
+          - record-fix-outcome
+
+  rovo:agent:
+    - key: bug-brief-agent
+      name: "Bug Brief Engineer"
+      description: Converts symptom-only customer bug reports into code-localized,
+        testable briefs for coding agents and posts ranked clarifying questions
+        to reporters.
+      prompt: |
+        You are Bug Brief Engineer, a specialized software triage and localization agent built on research into why coding agents fail on symptom-only user reports (where solve rates drop by 31% on 31B models and 62% on 12B models when reports lack function names and expected behavioral contracts).
+        Your job is to:
+        1. Inspect Jira or JSM bug reports using `get-agent-brief` and `get-readiness`.
+        2. Separate symptom-only descriptions from actionable engineering contracts (reproduction steps, expected vs. actual behavior, candidate files/symbols from the repository code map, and Given/When/Then acceptance criteria).
+        3. Never guess missing user intent: when critical reproduction or expected-behavior facts are missing, formulate at most 3 concise, ranked questions for the reporter and offer to post them via `post-reporter-questions`.
+        4. Help coding agents and developers discover ready-to-fix issues via `list-agent-ready-issues` and record verified locations or test outcomes via `record-code-location` and `record-fix-outcome`.
+      conversationStarters:
+        - Generate an agent-ready brief for this issue
+        - Which open bugs are ready for a coding agent right now?
+        - Draft clarifying questions for the reporter on this ticket
+        - Show the readiness breakdown and likely code locations
+      skills:
+        - agent-ready-brief-skill
+      actions:
+        - get-agent-brief
+        - get-readiness
+        - list-agent-ready-issues
+        - post-reporter-questions
+        - record-code-location
+        - record-fix-outcome
+
+  action:
+    - key: get-agent-brief
+      name: Get agent-ready brief for Jira issue
+      function: mcp-get-agent-brief
+      actionVerb: GET
+      description: |
+        Retrieve the structured Agent-Ready Brief for a Jira issue, including symptom vs. contract analysis, ranked candidate files and functions from the code map, Given/When/Then acceptance criteria, and readiness score (0-100).
+      inputs:
+        issueKey:
+          title: Issue Key
+          type: string
+          required: true
+          description: "The Jira issue key (for example, SUP-101 or BUG-42)"
+
+    - key: get-readiness
+      name: Get agent readiness score and missing gaps
+      function: mcp-get-readiness
+      actionVerb: GET
+      description: |
+        Retrieve the 5-dimension Agent Readiness Score (0-100), report style classification (symptom-only vs. developer-spec), and ranked missing-information questions for a Jira issue.
+      inputs:
+        issueKey:
+          title: Issue Key
+          type: string
+          required: true
+          description: "The Jira issue key (for example, SUP-101 or BUG-42)"
+
+    - key: list-agent-ready-issues
+      name: List issues filtered by agent readiness
+      function: mcp-list-issues-fn
+      actionVerb: GET
+      description: |
+        List Jira issues filtered by minimum or maximum Agent Readiness Score (for example, find issues >= 75 ready for an autonomous coding agent, or issues < 60 needing reporter clarification).
+      inputs:
+        projectKey:
+          title: Project Key
+          type: string
+          required: false
+          description: "Optional Jira project key filter (for example, SUP or ENG)"
+        minScore:
+          title: Minimum Readiness Score
+          type: number
+          required: false
+          description: "Minimum readiness score between 0 and 100 (default 70)"
+        statusFilter:
+          title: Readiness Status Filter
+          type: string
+          required: false
+          description: "Optional status filter: READY, NEEDS_CLARIFICATION, or UNANALYZED"
+
+    - key: post-reporter-questions
+      name: Post clarifying questions to issue reporter
+      function: mcp-post-questions-fn
+      actionVerb: UPDATE
+      description: |
+        Post ranked clarifying questions as a polite comment on the Jira/JSM issue so the reporter can supply missing reproduction steps or expected behavior, and mark the issue as awaiting reporter clarification.
+      inputs:
+        issueKey:
+          title: Issue Key
+          type: string
+          required: true
+          description: "The Jira issue key to comment on"
+        questionsMarkdown:
+          title: Questions Markdown
+          type: string
+          required: false
+          description: "Optional custom questions markdown; if omitted, uses the top
+            ranked missing-info questions from the brief"
+
+    - key: record-code-location
+      name: Record verified code location from coding agent
+      function: mcp-record-loc-fn
+      actionVerb: UPDATE
+      description: |
+        Allow an external coding agent (via Rovo MCP) or engineer to record verified target file paths, function symbols, and root-cause notes back onto the Jira issue's Agent-Ready Brief.
+      inputs:
+        issueKey:
+          title: Issue Key
+          type: string
+          required: true
+          description: "The Jira issue key"
+        filePath:
+          title: Verified File Path
+          type: string
+          required: true
+          description: "Repository-relative file path verified by the agent (for example,
+            fastapi/routing.py)"
+        symbolName:
+          title: Function or Class Symbol
+          type: string
+          required: true
+          description: "Function, method, or class symbol to modify (for example,
+            serialize_response)"
+        rootCauseNote:
+          title: Root Cause Note
+          type: string
+          required: false
+          description: "Short explanation of why this symbol causes the reported symptom"
+
+    - key: record-fix-outcome
+      name: Record coding agent fix and test outcome
+      function: mcp-record-fix-outcome
+      actionVerb: UPDATE
+      description: |
+        Record the outcome of a coding agent session (patch status, failing-then-passing reproduction test command, PR or branch ref, and tool calls used) onto the Jira issue brief and post a structured engineering comment.
+      inputs:
+        issueKey:
+          title: Issue Key
+          type: string
+          required: true
+          description: "The Jira issue key"
+        outcome:
+          title: Fix Outcome
+          type: string
+          required: true
+          description: "Outcome status: SOLVED, PARTIAL, or BLOCKED_NEEDS_INFO"
+        testCommand:
+          title: Verification Test Command
+          type: string
+          required: false
+          description: "Test command that failed before the fix and passed after (for
+            example, pytest tests/test_response.py -k test_custom_status)"
+        patchSummary:
+          title: Patch Summary
+          type: string
+          required: true
+          description: "Summary of the code changes and behavioural contract verified"
+
+  function:
+    - key: ui-resolver
+      handler: index.uiResolver
+    - key: trigger-handler
+      handler: index.triggerHandler
+    - key: consumer-handler
+      handler: index.consumerHandler
+      timeoutSeconds: 600
+    - key: mcp-get-agent-brief
+      handler: index.mcpGetAgentBrief
+    - key: mcp-get-readiness
+      handler: index.mcpGetReadiness
+    - key: mcp-list-issues-fn
+      handler: index.mcpListAgentReadyIssues
+    - key: mcp-post-questions-fn
+      handler: index.mcpPostReporterQuestions
+    - key: mcp-record-loc-fn
+      handler: index.mcpRecordCodeLocation
+    - key: mcp-record-fix-outcome
+      handler: index.mcpRecordFixOutcome
+
+resources:
+  - key: issue-panel-resource
+    path: src/frontend/issue-panel.jsx
+  - key: admin-page-resource
+    path: src/frontend/admin-page.jsx
+
+permissions:
+  scopes:
+    - read:jira-work
+    - write:jira-work
+    - read:jira-user
+    - storage:app
+    - read:graph:issue:jira
+    - read:graph:project:jira
+    - read:graph:pull-request:external
+
+app:
+  id: ari:cloud:ecosystem::app/506d0189-c6a8-4156-b502-1fcb1e7e4b6f
+  runtime:
+    name: nodejs24.x
+    memoryMB: 512
