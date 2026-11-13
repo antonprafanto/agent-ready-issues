@@ -131,9 +131,10 @@ export async function lookupSimilarResolvedBugsViaTwg(
             }
           }
         }
+        console.info("[agent-ready-issues] TWG echo:", twgConnected, "liveItems:", liveItems.length);
       }
-    } catch {
-      // Graceful fallback when TWG is not populated or user lacks org-admin grant
+    } catch (err) {
+      console.warn("[agent-ready-issues] TWG query failed:", err?.message || err);
     }
   }
 

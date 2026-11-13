@@ -97,6 +97,9 @@ const IssuePanelApp = () => {
           </Lozenge>
           <Lozenge appearance="new">{brief.reportStyle}</Lozenge>
           <Badge>{brief.languageDetected}</Badge>
+          <Lozenge appearance={brief.twgConnected ? "success" : "default"}>
+            {brief.twgConnected ? "TWG Live" : "TWG Precedents"}
+          </Lozenge>
         </Inline>
         <Text>Engine: {brief.engineUsed || "codemap"}</Text>
       </Inline>
@@ -110,6 +113,13 @@ const IssuePanelApp = () => {
         <Text>Tests: {bd.acceptanceCriteria ?? 0}/15</Text>
         <Text>Env/Trace: {bd.environmentContext ?? 0}/15</Text>
       </Inline>
+
+      {loading && (
+        <Stack space="space.050">
+          <Text>Refreshing Agent-Ready Brief via Code Map & Forge LLM...</Text>
+          <ProgressBar isIndeterminate />
+        </Stack>
+      )}
 
       {statusBanner && (
         <SectionMessage appearance="information" title="Action Complete">
@@ -201,13 +211,13 @@ const IssuePanelApp = () => {
       )}
 
       <ButtonGroup>
-        <Button appearance="primary" onClick={handlePostQuestions}>
+        <Button appearance="primary" isDisabled={loading} onClick={handlePostQuestions}>
           Post Questions to Reporter
         </Button>
         <Button onClick={() => setShowPrompt(!showPrompt)}>
           {showPrompt ? "Hide Coding Agent Prompt" : "Show MCP Coding Agent Prompt"}
         </Button>
-        <Button appearance="subtle" onClick={() => loadBrief("regenerateBrief")}>
+        <Button appearance="subtle" isDisabled={loading} onClick={() => loadBrief("regenerateBrief")}>
           Regenerate Brief
         </Button>
       </ButtonGroup>

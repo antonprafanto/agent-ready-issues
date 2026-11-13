@@ -287,8 +287,8 @@ export async function generateAgentReadyBrief({
             activeModels.find((m) => m.includes("sonnet-4-6")) ||
             activeModels[0];
         }
-      } catch {
-        // Keep default modelToUse
+      } catch (listErr) {
+        console.warn("[agent-ready-issues] Forge LLM list() failed:", listErr?.message || listErr);
       }
     }
 
@@ -316,7 +316,7 @@ export async function generateAgentReadyBrief({
       ]
     };
 
-    const response = await withTimeout(activeLlm.chat(promptPayload), 5500);
+    const response = await withTimeout(activeLlm.chat(promptPayload), 15000);
     const rawContent = response?.choices?.[0]?.message?.content;
     const textContent = Array.isArray(rawContent)
       ? rawContent.map((p) => p.text || "").join("")
@@ -325,6 +325,7 @@ export async function generateAgentReadyBrief({
     const jsonMatch = textContent.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
+      console.info("[agent-ready-issues] Forge LLM brief succeeded:", issueKey, modelToUse);
       return {
         ...baseBrief,
         symptomSummary: parsed.symptomSummary || baseBrief.symptomSummary,
@@ -346,8 +347,9 @@ export async function generateAgentReadyBrief({
         llmUsage: response?.usage || null
       };
     }
-  } catch {
-    // Graceful fallback to deterministic brief if Forge LLM is unavailable or unbilled on judge site
+    console.warn("[agent-ready-issues] Forge LLM response lacked JSON block; falling back:", issueKey);
+  } catch (err) {
+    console.warn("[agent-ready-issues] Forge LLM chat() failed:", issueKey, err?.message || err);
   }
 
   return baseBrief;
