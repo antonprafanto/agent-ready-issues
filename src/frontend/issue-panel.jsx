@@ -92,12 +92,12 @@ const IssuePanelApp = () => {
     <Stack space="space.200">
       <Inline space="space.100" rowSpace="space.075" alignBlock="center" spread="space-between" shouldWrap>
         <Inline space="space.100" rowSpace="space.075" alignBlock="center" shouldWrap>
-          <Lozenge appearance={statusAppearance(brief.readiness?.status)}>
+          <Lozenge appearance={statusAppearance(brief.readiness?.status)} maxWidth={320}>
             {brief.readiness?.status || "NEEDS_CLARIFICATION"} ({score}/100)
           </Lozenge>
-          <Lozenge appearance="new">{brief.reportStyle}</Lozenge>
+          <Lozenge appearance="new" maxWidth={320}>{brief.reportStyle}</Lozenge>
           <Badge>{brief.languageDetected}</Badge>
-          <Lozenge appearance={brief.twgConnected ? "success" : "default"}>
+          <Lozenge appearance={brief.twgConnected ? "success" : "default"} maxWidth={320}>
             {brief.twgConnected ? "TWG Live" : "TWG Precedents"}
           </Lozenge>
         </Inline>
@@ -106,13 +106,11 @@ const IssuePanelApp = () => {
 
       <ProgressBar value={Math.min(1, Math.max(0, score / 100))} />
 
-      <Inline space="space.150" rowSpace="space.075" shouldWrap>
-        <Text>Repro: {bd.reproSteps ?? 0}/25</Text>
-        <Text>Contract: {bd.expectedVsActual ?? 0}/25</Text>
-        <Text>Symbols: {bd.codeLocations ?? 0}/20</Text>
-        <Text>Tests: {bd.acceptanceCriteria ?? 0}/15</Text>
-        <Text>Env/Trace: {bd.environmentContext ?? 0}/15</Text>
-      </Inline>
+      <Text>
+        Repro: {bd.reproSteps ?? 0}/25 · Contract: {bd.expectedVsActual ?? 0}/25 · Symbols:{" "}
+        {bd.codeLocations ?? 0}/20 · Tests: {bd.acceptanceCriteria ?? 0}/15 · Env/Trace:{" "}
+        {bd.environmentContext ?? 0}/15
+      </Text>
 
       {loading && (
         <Stack space="space.050">
@@ -159,7 +157,7 @@ const IssuePanelApp = () => {
             <Stack key={`${loc.filePath}-${idx}`} space="space.050">
               <Inline space="space.100" rowSpace="space.075" alignBlock="center" shouldWrap>
                 <Code>{loc.filePath}</Code>
-                <Lozenge appearance={loc.verifiedByAgent ? "success" : "inprogress"}>
+                <Lozenge appearance={loc.verifiedByAgent ? "success" : "inprogress"} maxWidth={360}>
                   {loc.symbolName} ({Math.round((loc.confidence || 0) * 100)}%)
                 </Lozenge>
                 {loc.verifiedByAgent && <Lozenge appearance="success">MCP VERIFIED</Lozenge>}
@@ -203,7 +201,7 @@ const IssuePanelApp = () => {
               <Inline key={idx} space="space.100" rowSpace="space.075" alignBlock="center" shouldWrap>
                 <Badge>{item.pastIssueKey}</Badge>
                 <Text>{item.pastSummary}</Text>
-                {item.linkedPrTitle && <Lozenge appearance="moved">{item.linkedPrTitle}</Lozenge>}
+                {item.linkedPrTitle && <Lozenge appearance="moved" maxWidth={380}>{item.linkedPrTitle}</Lozenge>}
               </Inline>
             ))}
           </Stack>

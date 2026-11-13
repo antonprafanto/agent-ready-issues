@@ -94,7 +94,7 @@ const AdminPageApp = () => {
           {(benchmark.keyFindings || []).map((item, idx) => (
             <Stack key={idx} space="space.025">
               <Inline space="space.100" rowSpace="space.075" alignBlock="center" shouldWrap>
-                <Lozenge appearance="inprogress">{item.value}</Lozenge>
+                <Lozenge appearance="inprogress" maxWidth={320}>{item.value}</Lozenge>
                 <Text>{item.metric}</Text>
               </Inline>
               <Text>{item.detail}</Text>
@@ -113,10 +113,10 @@ const AdminPageApp = () => {
             <Stack key={item.issueKey} space="space.050">
               <Inline space="space.100" rowSpace="space.075" alignBlock="center" shouldWrap>
                 <Code>{item.issueKey}</Code>
-                <Lozenge appearance={item.score >= 75 ? "success" : "moved"}>
+                <Lozenge appearance={item.score >= 75 ? "success" : "moved"} maxWidth={320}>
                   {item.status} ({item.score}/100)
                 </Lozenge>
-                <Lozenge appearance="new">{item.reportStyle}</Lozenge>
+                <Lozenge appearance="new" maxWidth={320}>{item.reportStyle}</Lozenge>
                 <Badge>{item.languageDetected}</Badge>
                 {item.topFile && (
                   <Code>
@@ -172,12 +172,12 @@ const AdminPageApp = () => {
 
       <Box>
         <Heading size="medium">5. Forge LLM & Cost Guard Settings (Runs on Atlassian Eligible)</Heading>
-        <Inline space="space.200" rowSpace="space.075" shouldWrap>
-          <Text>Preferred Forge LLM: {settings.preferredModel || "claude-sonnet-5"}</Text>
-          <Text>Ready Threshold: {settings.readyScoreThreshold ?? 75}/100</Text>
-          <Text>Daily Site Brief Cap: {settings.dailyBriefCap ?? 200}</Text>
-          <Text>Bilingual EN/ID Questions: {settings.bilingualQuestions ? "Enabled" : "Disabled"}</Text>
-        </Inline>
+        <Text>
+          Preferred Forge LLM: {settings.preferredModel || "claude-sonnet-5"} · Ready Threshold:{" "}
+          {settings.readyScoreThreshold ?? 75}/100 · Daily Site Brief Cap:{" "}
+          {settings.dailyBriefCap ?? 200} · Bilingual EN/ID Questions:{" "}
+          {settings.bilingualQuestions ? "Enabled" : "Disabled"}
+        </Text>
       </Box>
     </Stack>
   );
