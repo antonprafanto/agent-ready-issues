@@ -1,5 +1,7 @@
 # Agent-Ready Issues for Jira & Rovo MCP
 
+![Agent-Ready Issues Cover](docs/images/cover-thumbnail.png)
+
 **Turn symptom-only customer bug reports in Jira & JSM into code-localized, testable engineering briefs served directly to coding agents over Atlassian Rovo MCP.**
 
 Built for **Atlassian Codegeist 2026**:
@@ -22,6 +24,18 @@ Crucially, our trace analysis showed that coding agents still reached the right 
 2. **Zero-Egress Code Map Localization:** Ranks candidate files and symbols (`fastapi/dependencies/utils.py :: analyze_param`, `rich/console.py :: Console.print`) inside Forge KVS without ever exporting source-code bodies outside your repository.
 3. **Ask the Reporter Instead of Guessing:** When a ticket scores `< 75`, generates at most 3 ranked clarifying questions in **English and Indonesian** and posts them to the issue in one click.
 4. **Closed-Loop Rovo MCP Server (`rovo:mcp`):** Coding agents pull ready briefs (`list-agent-ready-issues`, `get-agent-brief`), pin verified root-cause symbols (`record-code-location`), and report failing-to-passing test outcomes (`record-fix-outcome`).
+
+---
+
+## Architecture (Zero-Egress Forge Pipeline)
+
+![Agent-Ready Issues Zero-Egress Forge Architecture](docs/images/architecture.png)
+
+## Live Atlassian Screenshots
+
+| Jira Issue Panel (`PLAT-33510`, Code Map Engine) | Jira Issue Panel (`PLAT-33510`, Hosted Forge LLM) |
+| --- | --- |
+| ![Jira Issue Panel Code Map](docs/images/live-jira-panel.png) | ![Jira Issue Panel Forge LLM](docs/images/live-forge-llm-panel.png) |
 
 ---
 
