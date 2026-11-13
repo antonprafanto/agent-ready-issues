@@ -90,8 +90,8 @@ const IssuePanelApp = () => {
 
   return (
     <Stack space="space.200">
-      <Inline space="space.100" alignBlock="center" spread="space-between">
-        <Inline space="space.100" alignBlock="center">
+      <Inline space="space.100" rowSpace="space.075" alignBlock="center" spread="space-between" shouldWrap>
+        <Inline space="space.100" rowSpace="space.075" alignBlock="center" shouldWrap>
           <Lozenge appearance={statusAppearance(brief.readiness?.status)}>
             {brief.readiness?.status || "NEEDS_CLARIFICATION"} ({score}/100)
           </Lozenge>
@@ -106,7 +106,7 @@ const IssuePanelApp = () => {
 
       <ProgressBar value={Math.min(1, Math.max(0, score / 100))} />
 
-      <Inline space="space.150">
+      <Inline space="space.150" rowSpace="space.075" shouldWrap>
         <Text>Repro: {bd.reproSteps ?? 0}/25</Text>
         <Text>Contract: {bd.expectedVsActual ?? 0}/25</Text>
         <Text>Symbols: {bd.codeLocations ?? 0}/20</Text>
@@ -157,7 +157,7 @@ const IssuePanelApp = () => {
         <Stack space="space.100">
           {(brief.codeLocations || []).map((loc, idx) => (
             <Stack key={`${loc.filePath}-${idx}`} space="space.050">
-              <Inline space="space.100" alignBlock="center">
+              <Inline space="space.100" rowSpace="space.075" alignBlock="center" shouldWrap>
                 <Code>{loc.filePath}</Code>
                 <Lozenge appearance={loc.verifiedByAgent ? "success" : "inprogress"}>
                   {loc.symbolName} ({Math.round((loc.confidence || 0) * 100)}%)
@@ -200,7 +200,7 @@ const IssuePanelApp = () => {
           <Heading size="small">5. Similar Resolved Bugs & Linked PRs (Teamwork Graph)</Heading>
           <Stack space="space.075">
             {(brief.twgPrecedents || []).map((item, idx) => (
-              <Inline key={idx} space="space.100" alignBlock="center">
+              <Inline key={idx} space="space.100" rowSpace="space.075" alignBlock="center" shouldWrap>
                 <Badge>{item.pastIssueKey}</Badge>
                 <Text>{item.pastSummary}</Text>
                 {item.linkedPrTitle && <Lozenge appearance="moved">{item.linkedPrTitle}</Lozenge>}
@@ -223,7 +223,7 @@ const IssuePanelApp = () => {
       </ButtonGroup>
 
       {showPrompt && (
-        <CodeBlock language="markdown" text={brief.agentPrompt || ""} />
+        <CodeBlock language="markdown" text={brief.agentPrompt || ""} shouldWrapLongLines />
       )}
     </Stack>
   );

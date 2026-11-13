@@ -42,3 +42,38 @@ Coding agents excel when given developer pull-request specifications, yet real c
   - Switch to Claude Code connected via `https://mcp.atlassian.com/forge/<appId>` using our `fix-from-agent-brief` skill: pull the brief with `get-agent-brief`, verify the symbol with `record-code-location`, run `pytest`, and call `record-fix-outcome` — watching the Jira Issue Panel badge flip to `SOLVED_BY_AGENT` in real time.
 - **2:25–2:55 — Architecture & Runs-on-Atlassian Trust Story:**
   - Show `manifest.yml`: zero external egress (`Runs on Atlassian` eligible), `@forge/llm` (`claude-sonnet-5`) inside an async event consumer (`timeoutSeconds: 600`), plus a deterministic code-map fallback so the app never times out.
+
+
+---
+
+## Devpost Copy-Paste Form Fields
+
+### Built With
+`atlassian-forge`, `jira`, `rovo`, `mcp`, `atlassian-forge-llm`, `atlassian-teamwork-graph`, `react`, `node.js`, `javascript`
+
+### Challenges We Ran Into
+- Keeping coding-agent issue briefs rich in structured detail (readiness scores, behavioral contracts, localized file/symbol badges, Teamwork Graph precedents) while preventing horizontal badge truncation inside Jira Cloud's narrow issue panel column (`Inline` wrapping with `shouldWrap` and `rowSpace`).
+- Handling real-world code-mixed Indonesian and English bug reports alongside symptom-only tickets without sending repository source code bodies outside Atlassian's Forge boundary.
+- Designing a closed-loop `rovo:mcp` tool surface (`get-agent-brief`, `get-readiness`, `list-agent-ready-issues`, `post-reporter-questions`, `record-code-location`, `record-fix-outcome`) that validates inputs cleanly and falls back reliably when LLM quotas or optional Teamwork Graph scopes vary across sites.
+
+### Accomplishments That We're Proud Of
+- Delivered a zero-egress, `Runs on Atlassian`-eligible Jira + Rovo MCP app powered by `@forge/kvs`, `@forge/llm`, Jira issue entity properties (`agentReadyScore`, `agentReadyStatus`), and Atlassian Teamwork Graph precedents.
+- Implemented all 6 Rovo MCP tools with end-to-end automated lifecycle coverage (`4/4` passing tests in `node --test`) and live verification on Jira Cloud issues (`PLAT-33510`, `PLAT-33511`, `PLAT-33512`).
+- Created both developer/triage UI Kit views (`issue-panel.jsx`, `admin-page.jsx`) and documented clear `PRIVACY.md` compliance for public distribution.
+
+### What We Learned
+- Autonomous coding agents fail disproportionately when Jira tickets omit expected behavioral contracts, acceptance criteria, and symbol entry points—turning issue triage into a 5-dimension readiness score (`Repro 0-25`, `Contract 0-25`, `Symbols 0-20`, `Tests 0-15`, `Env/Trace 0-15`) gives both humans and MCP agents an actionable gate.
+- Validating UI Kit layouts directly in live Jira Cloud reveals real viewport wrapping edge cases early.
+
+### Testing Instructions for Judges
+1. Install the app on your Jira Cloud test site using the Installation Link provided on this Devpost submission (or deploy via `forge deploy` and `forge install`).
+2. Open a Jira issue and expand **Agent-Ready Brief & MCP** to view the readiness score bar, breakdown across 5 dimensions, `1. Behavioral Contract (Symptom vs. Expected)`, `2. Zero-Egress Code Map Localization`, `3. Given / When / Then Acceptance Criteria`, `4. Ranked Reporter Questions (Bilingual EN / ID)`, and `5. Similar Resolved Bugs & Linked PRs (Teamwork Graph)`.
+3. Toggle **Show MCP Coding Agent Prompt** to inspect the structured agent handoff prompt, or click **Post Questions to Reporter** to post clarified bilingual questions directly to the issue.
+4. Open **Apps -> Agent-Ready Issues Admin** to inspect the live indexed JQL readiness queue, Rovo MCP `claude mcp add` command snippet, zero-egress repository code map, and Forge LLM settings.
+
+### Project Links & Distribution Checklist (`antonprafanto`)
+- **GitHub Repository URL *(push pending)*:** `https://github.com/antonprafanto/agent-ready-issues`
+- **Privacy Policy URL *(live once repo is pushed)*:** `https://github.com/antonprafanto/agent-ready-issues/blob/main/PRIVACY.md`
+- **Support Contact Email:** `anton.prafanto@gmail.com`
+- **Atlassian Forge App ID:** `506d0189-c6a8-4156-b502-1fcb1e7e4b6f`
+- **Installation Link:** Push `PRIVACY.md` to GitHub, switch Developer Console Distribution to **Sharing with anyone**, and copy the public install link here before final Devpost submission.

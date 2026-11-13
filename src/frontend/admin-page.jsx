@@ -93,7 +93,7 @@ const AdminPageApp = () => {
           </Text>
           {(benchmark.keyFindings || []).map((item, idx) => (
             <Stack key={idx} space="space.025">
-              <Inline space="space.100" alignBlock="center">
+              <Inline space="space.100" rowSpace="space.075" alignBlock="center" shouldWrap>
                 <Lozenge appearance="inprogress">{item.value}</Lozenge>
                 <Text>{item.metric}</Text>
               </Inline>
@@ -111,7 +111,7 @@ const AdminPageApp = () => {
         <Stack space="space.150">
           {issues.map((item) => (
             <Stack key={item.issueKey} space="space.050">
-              <Inline space="space.100" alignBlock="center">
+              <Inline space="space.100" rowSpace="space.075" alignBlock="center" shouldWrap>
                 <Code>{item.issueKey}</Code>
                 <Lozenge appearance={item.score >= 75 ? "success" : "moved"}>
                   {item.status} ({item.score}/100)
@@ -138,6 +138,7 @@ const AdminPageApp = () => {
         </Text>
         <CodeBlock
           language="bash"
+          shouldWrapLongLines
           text={[
             "claude mcp add --transport http agent-ready-issues https://mcp.atlassian.com/forge/506d0189-c6a8-4156-b502-1fcb1e7e4b6f",
             "# Exposed MCP Tools (6):",
@@ -161,7 +162,7 @@ const AdminPageApp = () => {
         </Text>
         <Stack space="space.075">
           {(codeMap.entries || []).map((entry, idx) => (
-            <Inline key={idx} space="space.100" alignBlock="center">
+            <Inline key={idx} space="space.100" rowSpace="space.075" alignBlock="center" shouldWrap>
               <Code>{entry.filePath}</Code>
               <Text>Symbols: {(entry.symbols || []).join(", ")}</Text>
             </Inline>
@@ -171,7 +172,7 @@ const AdminPageApp = () => {
 
       <Box>
         <Heading size="medium">5. Forge LLM & Cost Guard Settings (Runs on Atlassian Eligible)</Heading>
-        <Inline space="space.200">
+        <Inline space="space.200" rowSpace="space.075" shouldWrap>
           <Text>Preferred Forge LLM: {settings.preferredModel || "claude-sonnet-5"}</Text>
           <Text>Ready Threshold: {settings.readyScoreThreshold ?? 75}/100</Text>
           <Text>Daily Site Brief Cap: {settings.dailyBriefCap ?? 200}</Text>
