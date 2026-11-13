@@ -71,9 +71,10 @@ Coding agents excel when given developer pull-request specifications, yet real c
 3. Toggle **Show MCP Coding Agent Prompt** to inspect the structured agent handoff prompt, or click **Post Questions to Reporter** to post clarified bilingual questions directly to the issue.
 4. Open **Apps -> Agent-Ready Issues Admin** to inspect the live indexed JQL readiness queue, Rovo MCP `claude mcp add` command snippet, zero-egress repository code map, and Forge LLM settings.
 
-### Project Links & Distribution Checklist (`antonprafanto`)
-- **GitHub Repository URL *(push pending)*:** `https://github.com/antonprafanto/agent-ready-issues`
-- **Privacy Policy URL *(live once repo is pushed)*:** `https://github.com/antonprafanto/agent-ready-issues/blob/main/PRIVACY.md`
+### Project Links & Distribution (`antonprafanto`)
+- **GitHub Repository URL:** `https://github.com/antonprafanto/agent-ready-issues`
+- **Privacy Policy URL:** `https://github.com/antonprafanto/agent-ready-issues/blob/main/PRIVACY.md`
 - **Support Contact Email:** `anton.prafanto@gmail.com`
 - **Atlassian Forge App ID:** `506d0189-c6a8-4156-b502-1fcb1e7e4b6f`
-- **Installation Link:** Push `PRIVACY.md` to GitHub, switch Developer Console Distribution to **Sharing with anyone**, and copy the public install link here before final Devpost submission.
+- **Public Installation Link (`Sharing with anyone`, Jira):**
+  `https://developer.atlassian.com/console/install/506d0189-c6a8-4156-b502-1fcb1e7e4b6f?signature=AYABeMjwfk8RiZfcSKUXqL7B5JkAAAADAAdhd3Mta21zAEthcm46YXdzOmttczp1cy13ZXN0LTI6NzA5NTg3ODM1MjQzOmtleS83MDVlZDY3MC1mNTdjLTQxYjUtOWY5Yi1lM2YyZGNjMTQ2ZTcAuAECAQB4CxqLTo9l4lqXuFjNim1xJM%2Bp%2F3TVP9xHS2BrU5DRRucBRyg4QOhk9%2FSyBqi526mjUgAAAH4wfAYJKoZIhvcNAQcGoG8wbQIBADBoBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDKJ0OyYfwPxVylkIwgIBEIA7AJnUcb8TCShlnHjZp7jsODOraW7%2FVliqYLhm0SsAdVg7IYoa4QoK5OhOV3VwQdoN88y7%2BI0hICCApT0AB2F3cy1rbXMAS2Fybjphd3M6a21zOmV1LXdlc3QtMTo3MDk1ODc4MzUyNDM6a2V5LzQ2MzBjZTZiLTAwYzMtNGRlMi04NzdiLTYyN2UyMDYwZTVjYwC4AQICAHi9bVMAkme4qVQX1fQHo6ePw3H40A7cGfz7yrmSfBWMXgGaXZSlaqK0c512dK39m0vMAAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMKm5E%2FNOmT7G3xgBZAgEQgDslrxwT0IJOX9UVmrUdIXu76%2BM3M8i9f8J27zAszQ6Tq0b3JbVpyeBjB%2BArc5edVxKLaCAr4zUSllGtaAAHYXdzLWttcwBLYXJuOmF3czprbXM6dXMtZWFzdC0xOjcwOTU4NzgzNTI0MzprZXkvNmMxMjBiYTAtNGNkNS00OTg1LWI4MmUtNDBhMDQ5NTJjYzU3ALgBAgIAeDYASx0XCjkny4iLV6vz%2BKtEGSGT6kdt0QRpkn6D%2FlVEAVPOkOHiRPtx3v8qu8xw0OIAAAB%2BMHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAzjWvckmi1qfL8Tej0CARCAO0cCbX8EdUFav4sq%2BxVXRtSWfmetYK5jTkqTzGoy2BOnF%2BDqt1p1pS%2Bg4zyOe5AiemmHEuv%2FoQoUaaRhAgAAAAAMAAAQAAAAAAAAAAAAAAAAAB1vfs%2FF3OYyWbc0sfm7v%2BX%2F%2F%2F%2F%2FAAAAAQAAAAAAAAAAAAAAAQAAADLmSZDggyMAsIVxSVh4EIVWEJBZicCBzCVOb1qcJPB0wGx0l1STkit8a41Ek1St9JvybEQB%2BHLmn4qy4qN03KWm2VE%3D&product=jira`
