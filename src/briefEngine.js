@@ -296,12 +296,12 @@ export async function generateAgentReadyBrief({
       model: modelToUse,
       // IMPORTANT: Per Forge LLMs validation rules, omit temperature & top_p
       // because claude-sonnet-5 and claude-opus-5 reject sampling parameters.
-      max_completion_tokens: 900,
+      max_completion_tokens: 2200,
       messages: [
         {
           role: "system",
           content:
-            "You are an expert software triage engineer. Given a bug report and top repository code-map entries, return ONLY valid JSON with keys: symptomSummary (string), expectedBehavior (string), actualBehavior (string), reproductionSteps (string[]), acceptanceCriteria ({given,when,then}[]), and missingInfoQuestions ({priority,dimension,questionEn,questionId}[]). Keep code identifiers in English."
+            "You are an expert software triage engineer. Given a bug report and top repository code-map entries, return ONLY a single raw valid JSON object (no markdown fences, no commentary; keep strings concise and at most 3 items per array) with keys: symptomSummary (string), expectedBehavior (string), actualBehavior (string), reproductionSteps (string[]), acceptanceCriteria ({given,when,then}[]), and missingInfoQuestions ({priority,dimension,questionEn,questionId}[]). Keep code identifiers in English."
         },
         {
           role: "user",
@@ -316,40 +316,66 @@ export async function generateAgentReadyBrief({
       ]
     };
 
-    const response = await withTimeout(activeLlm.chat(promptPayload), 15000);
-    const rawContent = response?.choices?.[0]?.message?.content;
-    const textContent = Array.isArray(rawContent)
-      ? rawContent.map((p) => p.text || "").join("")
-      : String(rawContent || "");
+    let finishReason = "";
+    let textContent = "";
+    try {
+      const response = await withTimeout(activeLlm.chat(promptPayload), 20000);
+      finishReason = response?.choices?.[0]?.finish_reason || "";
+      const rawContent = response?.choices?.[0]?.message?.content;
+      textContent = (
+        Array.isArray(rawContent)
+          ? rawContent.map((p) => p.text || "").join("")
+          : String(rawContent || "")
+      )
+        .replace(/^```(?:json)?\s*/i, "")
+        .replace(/```[\s]*$/i, "")
+        .trim();
 
-    const jsonMatch = textContent.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0]);
-      console.info("[agent-ready-issues] Forge LLM brief succeeded:", issueKey, modelToUse);
-      return {
-        ...baseBrief,
-        symptomSummary: parsed.symptomSummary || baseBrief.symptomSummary,
-        expectedBehavior: parsed.expectedBehavior || baseBrief.expectedBehavior,
-        actualBehavior: parsed.actualBehavior || baseBrief.actualBehavior,
-        reproductionSteps:
-          Array.isArray(parsed.reproductionSteps) && parsed.reproductionSteps.length > 0
-            ? parsed.reproductionSteps
-            : baseBrief.reproductionSteps,
-        acceptanceCriteria:
-          Array.isArray(parsed.acceptanceCriteria) && parsed.acceptanceCriteria.length > 0
-            ? parsed.acceptanceCriteria
-            : baseBrief.acceptanceCriteria,
-        missingInfoQuestions:
-          Array.isArray(parsed.missingInfoQuestions) && parsed.missingInfoQuestions.length > 0
-            ? parsed.missingInfoQuestions
-            : baseBrief.missingInfoQuestions,
-        engineUsed: `forge-llm:${modelToUse}`,
-        llmUsage: response?.usage || null
-      };
+      const firstBrace = textContent.indexOf("{");
+      const lastBrace = textContent.lastIndexOf("}");
+      if (firstBrace !== -1 && lastBrace > firstBrace) {
+        const parsed = JSON.parse(textContent.slice(firstBrace, lastBrace + 1));
+        console.info("[agent-ready-issues] Forge LLM brief succeeded:", issueKey, modelToUse);
+        return {
+          ...baseBrief,
+          symptomSummary: parsed.symptomSummary || baseBrief.symptomSummary,
+          expectedBehavior: parsed.expectedBehavior || baseBrief.expectedBehavior,
+          actualBehavior: parsed.actualBehavior || baseBrief.actualBehavior,
+          reproductionSteps:
+            Array.isArray(parsed.reproductionSteps) && parsed.reproductionSteps.length > 0
+              ? parsed.reproductionSteps
+              : baseBrief.reproductionSteps,
+          acceptanceCriteria:
+            Array.isArray(parsed.acceptanceCriteria) && parsed.acceptanceCriteria.length > 0
+              ? parsed.acceptanceCriteria
+              : baseBrief.acceptanceCriteria,
+          missingInfoQuestions:
+            Array.isArray(parsed.missingInfoQuestions) && parsed.missingInfoQuestions.length > 0
+              ? parsed.missingInfoQuestions
+              : baseBrief.missingInfoQuestions,
+          engineUsed: `forge-llm:${modelToUse}`,
+          llmUsage: response?.usage || null
+        };
+      }
+      console.warn(
+        "[agent-ready-issues] Forge LLM response lacked JSON block; falling back:",
+        issueKey,
+        finishReason,
+        textContent.length
+      );
+    } catch (chatErr) {
+      console.warn(
+        "[agent-ready-issues] Forge LLM chat() failed:",
+        issueKey,
+        chatErr?.message || chatErr,
+        "finish_reason:",
+        finishReason,
+        "len:",
+        textContent.length
+      );
     }
-    console.warn("[agent-ready-issues] Forge LLM response lacked JSON block; falling back:", issueKey);
   } catch (err) {
-    console.warn("[agent-ready-issues] Forge LLM chat() failed:", issueKey, err?.message || err);
+    console.warn("[agent-ready-issues] Forge LLM setup failed:", issueKey, err?.message || err);
   }
 
   return baseBrief;
